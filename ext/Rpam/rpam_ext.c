@@ -6,16 +6,16 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  * A full copy of the GNU license is provided in the file LICENSE.
  *
 *******************************************************************************/
@@ -25,7 +25,7 @@
 typedef struct {
 	char *name, *pw;
 } pam_auth_t;
-    
+
 VALUE Rpam;
 VALUE Rpam_Ext;
 
@@ -53,7 +53,7 @@ int auth_pam_talker(int num_msg,
      /* parameter sanity checking */
     if (!resp || !msg || !userinfo)
         return PAM_CONV_ERR;
-	
+
    	/* allocate memory to store response */
 	response = malloc(num_msg * sizeof(struct pam_response));
 	if (!response)
@@ -87,7 +87,7 @@ int auth_pam_talker(int num_msg,
 }
 
 /* Authenticates a user and returns TRUE on success, FALSE on failure */
-VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicename) {	
+VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicename) {
 	char* rpam_servicename;
     pam_auth_t userinfo = {NULL, NULL};
 	struct pam_conv conv_info = {&auth_pam_talker, (void *) &userinfo};
@@ -97,24 +97,27 @@ VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicena
 	rpam_servicename = StringValuePtr(servicename);
 	userinfo.name =    StringValuePtr(username);
 	userinfo.pw =      StringValuePtr(password);
- 
-	if ((result = pam_start(rpam_servicename, userinfo.name, &conv_info, &pamh)) 
+
+	if ((result = pam_start(rpam_servicename, userinfo.name, &conv_info, &pamh))
             != PAM_SUCCESS) {
-       
+
         return Qfalse;
     }
     if ((result = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK))
            !=  PAM_SUCCESS) {
 
-        pam_end(pamh, PAM_SUCCESS); 
+        pam_end(pamh, PAM_SUCCESS);
         return Qfalse;
     }
 
-   if ((result = pam_acct_mgmt(pamh, PAM_DISALLOW_NULL_AUTHTOK)) 
+   if ((result = pam_acct_mgmt(pamh, PAM_DISALLOW_NULL_AUTHTOK))
            != PAM_SUCCESS) {
-       
+
+      // we'll allow the user to continue if the auth token is expired and handle password change within the applicaiton
+      if((result != PAM_NEW_AUTHTOK_REQD)){
         pam_end(pamh, PAM_SUCCESS);
         return Qfalse;
+      }
    }
 
     pam_end(pamh, PAM_SUCCESS);
