@@ -1,4 +1,4 @@
-require 'rpam_ext'
+require './ext/Rpam/rpam_ext'
 
 module Rpam
   def authpam *args
