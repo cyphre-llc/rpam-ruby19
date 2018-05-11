@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{rpam-ruby19}
-  s.version = "1.2.2"
+  s.version = "1.2.03"
   s.summary = %q{PAM integration with Ruby.}
   s.require_paths = ["lib"]
   s.email = %q{jason@decomplecting.org}
