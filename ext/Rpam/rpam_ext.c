@@ -122,11 +122,11 @@ VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicena
 
   if (result == PAM_NEW_AUTHTOK_REQD){
     pam_end(pamh, PAM_SUCCESS);
-    return -1;
-  }
-
+    return NULL;
+  }else{
     pam_end(pamh, PAM_SUCCESS);
     return Qtrue;
+  }
 }
 
 /* initialize */
