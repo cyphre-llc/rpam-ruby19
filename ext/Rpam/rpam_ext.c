@@ -101,13 +101,13 @@ VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicena
 	if ((result = pam_start(rpam_servicename, userinfo.name, &conv_info, &pamh))
             != PAM_SUCCESS) {
 
-        return result;
+        return Qfalse;
     }
     if ((result = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK))
            !=  PAM_SUCCESS) {
 
         pam_end(pamh, PAM_SUCCESS);
-        return result;
+        return Qfalse;
     }
 
    if ((result = pam_acct_mgmt(pamh, PAM_DISALLOW_NULL_AUTHTOK))
@@ -116,16 +116,16 @@ VALUE method_authpam(VALUE self, VALUE username, VALUE password, VALUE servicena
       // we'll allow the user to continue if the auth token is expired and handle password change within the applicaiton
       if((result != PAM_NEW_AUTHTOK_REQD)){
         pam_end(pamh, PAM_SUCCESS);
-        return result;
+        return Qfalse;
       }
    }
 
   if (result == PAM_NEW_AUTHTOK_REQD){
     pam_end(pamh, PAM_SUCCESS);
-    return result;
+    return -1;
   }else{
     pam_end(pamh, PAM_SUCCESS);
-    return result;
+    return Qtrue;
   }
 
 }
